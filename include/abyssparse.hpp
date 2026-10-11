@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef HYPRLANG_HPP
-#define HYPRLANG_HPP
+#ifndef ABYSSPARSE_HPP
+#define ABYSSPARSE_HPP
 
 #include <typeindex>
 #include <any>
@@ -15,9 +15,9 @@ class CConfigImpl;
 struct SConfigDefaultValue;
 struct SSpecialCategory;
 
-#define HYPRLANG_END_MAGIC 0x1337BEEF
+#define ABYSSPARSE_END_MAGIC 0x1337BEEF
 
-namespace Hyprlang {
+namespace Abyssparse {
 
     struct SVector2D;
     class CConfigCustomValueType;
@@ -120,7 +120,7 @@ namespace Hyprlang {
         int pathIsStream = false;
 
         // INTERNAL: DO NOT MODIFY
-        int __internal_struct_end = HYPRLANG_END_MAGIC;
+        int __internal_struct_end = ABYSSPARSE_END_MAGIC;
     };
 
     /*!
@@ -133,7 +133,7 @@ namespace Hyprlang {
         bool allowFlags = false;
 
         // INTERNAL: DO NOT MODIFY
-        int __internal_struct_end = HYPRLANG_END_MAGIC;
+        int __internal_struct_end = ABYSSPARSE_END_MAGIC;
     };
 
     /*!
@@ -164,7 +164,7 @@ namespace Hyprlang {
         int anonymousKeyBased = false;
 
         // INTERNAL: DO NOT MODIFY
-        int __internal_struct_end = HYPRLANG_END_MAGIC;
+        int __internal_struct_end = ABYSSPARSE_END_MAGIC;
     };
 
     /*!
@@ -463,7 +463,7 @@ namespace Hyprlang {
     };
 
     /*!
-        Templated wrapper for Hyprlang values. Much more straightforward to use.
+        Templated wrapper for Abyssparse values. Much more straightforward to use.
 
         \since 0.6.0
     */
@@ -481,14 +481,14 @@ namespace Hyprlang {
             // NOLINTNEXTLINE
             p_ = VAL->getDataStaticPtr();
 
-#ifdef HYPRLAND_DEBUG
+#ifdef ABYSSLAND_DEBUG
             // verify type
             const auto ANY  = VAL->getValue();
             const auto TYPE = std::type_index(ANY.type());
 
             // exceptions
-            const bool STRINGEX = (typeid(T) == typeid(std::string) && TYPE == typeid(Hyprlang::STRING));
-            const bool CUSTOMEX = (typeid(T) == typeid(Hyprlang::CUSTOMTYPE) && (TYPE == typeid(Hyprlang::CUSTOMTYPE*) || TYPE == typeid(void*) /* dunno why it does this? */));
+            const bool STRINGEX = (typeid(T) == typeid(std::string) && TYPE == typeid(Abyssparse::STRING));
+            const bool CUSTOMEX = (typeid(T) == typeid(Abyssparse::CUSTOMTYPE) && (TYPE == typeid(Abyssparse::CUSTOMTYPE*) || TYPE == typeid(void*) /* dunno why it does this? */));
 
             if (typeid(T) != TYPE && !STRINGEX && !CUSTOMEX) {
                 std::println("CSimpleConfigValue: Mismatched type in CConfigValue<T>, got {} but has {}", typeid(T).name(), TYPE.name());
@@ -518,34 +518,34 @@ namespace Hyprlang {
 
     template <>
     inline std::string CSimpleConfigValue<std::string>::operator*() const {
-        return std::string{*(Hyprlang::STRING*)p_};
+        return std::string{*(Abyssparse::STRING*)p_};
     }
 
     template <>
-    inline Hyprlang::STRING* CSimpleConfigValue<Hyprlang::STRING>::ptr() const {
-        return (Hyprlang::STRING*)p_;
+    inline Abyssparse::STRING* CSimpleConfigValue<Abyssparse::STRING>::ptr() const {
+        return (Abyssparse::STRING*)p_;
     }
 
     template <>
-    inline Hyprlang::STRING CSimpleConfigValue<Hyprlang::STRING>::operator*() const {
-        return *(Hyprlang::STRING*)p_;
+    inline Abyssparse::STRING CSimpleConfigValue<Abyssparse::STRING>::operator*() const {
+        return *(Abyssparse::STRING*)p_;
     }
 
     template <>
-    inline Hyprlang::CUSTOMTYPE* CSimpleConfigValue<Hyprlang::CUSTOMTYPE>::ptr() const {
-        return *(Hyprlang::CUSTOMTYPE* const*)p_;
+    inline Abyssparse::CUSTOMTYPE* CSimpleConfigValue<Abyssparse::CUSTOMTYPE>::ptr() const {
+        return *(Abyssparse::CUSTOMTYPE* const*)p_;
     }
 
     template <>
-    inline Hyprlang::CUSTOMTYPE CSimpleConfigValue<Hyprlang::CUSTOMTYPE>::operator*() const {
-        std::print("Impossible to implement operator* of CConfigValue<Hyprlang::CUSTOMTYPE>, use ptr()");
+    inline Abyssparse::CUSTOMTYPE CSimpleConfigValue<Abyssparse::CUSTOMTYPE>::operator*() const {
+        std::print("Impossible to implement operator* of CConfigValue<Abyssparse::CUSTOMTYPE>, use ptr()");
         abort();
         return *ptr();
     }
 };
 
-#ifndef HYPRLANG_INTERNAL
-#undef HYPRLANG_END_MAGIC
+#ifndef ABYSSPARSE_INTERNAL
+#undef ABYSSPARSE_END_MAGIC
 #endif
 
 #endif

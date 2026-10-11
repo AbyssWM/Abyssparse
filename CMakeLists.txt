@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.19)
 
 file(READ "${CMAKE_SOURCE_DIR}/VERSION" VER_RAW)
-string(STRIP ${VER_RAW} HYPRLANG_VERSION)
+string(STRIP ${VER_RAW} ABYSSPARSE_VERSION)
 
 project(
-  hyprlang
-  VERSION ${HYPRLANG_VERSION}
-  DESCRIPTION "A library to parse hypr config files")
+  abyssparse
+  VERSION ${ABYSSPARSE_VERSION}
+  DESCRIPTION "A library to parse abyss config files")
 
 include(CTest)
 include(GNUInstallDirs)
@@ -15,17 +15,17 @@ set(PREFIX ${CMAKE_INSTALL_PREFIX})
 set(INCLUDE ${CMAKE_INSTALL_FULL_INCLUDEDIR})
 set(LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
 
-configure_file(hyprlang.pc.in hyprlang.pc @ONLY)
+configure_file(abyssparse.pc.in abyssparse.pc @ONLY)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES DEBUG)
-  message(STATUS "Configuring hyprlang in Debug")
-  add_compile_definitions(HYPRLAND_DEBUG)
+  message(STATUS "Configuring abyssparse in Debug")
+  add_compile_definitions(ABYSSLAND_DEBUG)
 else()
   add_compile_options(-O3)
-  message(STATUS "Configuring hyprlang in Release")
+  message(STATUS "Configuring abyssparse in Release")
 endif()
 
-add_compile_definitions(HYPRLANG_INTERNAL)
+add_compile_definitions(ABYSSPARSE_INTERNAL)
 
 set(CMAKE_CXX_STANDARD 23)
 add_compile_options(
@@ -37,49 +37,49 @@ add_compile_options(
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(deps REQUIRED IMPORTED_TARGET hyprutils>=0.7.1)
+pkg_check_modules(deps REQUIRED IMPORTED_TARGET abyssutils>=0.7.1)
 
-file(GLOB_RECURSE SRCFILES CONFIGURE_DEPENDS "src/*.cpp" "include/hyprlang.hpp")
+file(GLOB_RECURSE SRCFILES CONFIGURE_DEPENDS "src/*.cpp" "include/abyssparse.hpp")
 
-add_library(hyprlang SHARED ${SRCFILES})
+add_library(abyssparse SHARED ${SRCFILES})
 target_include_directories(
-  hyprlang
+  abyssparse
   PUBLIC "./include"
   PRIVATE "./src")
 set_target_properties(
-  hyprlang
-  PROPERTIES VERSION ${HYPRLANG_VERSION}
+  abyssparse
+  PROPERTIES VERSION ${ABYSSPARSE_VERSION}
              SOVERSION 2
-             PUBLIC_HEADER include/hyprlang.hpp)
+             PUBLIC_HEADER include/abyssparse.hpp)
 
-target_link_libraries(hyprlang PkgConfig::deps)
+target_link_libraries(abyssparse PkgConfig::deps)
 
-add_library(hypr::hyprlang ALIAS hyprlang)
-install(TARGETS hyprlang)
+add_library(abyss::abyssparse ALIAS abyssparse)
+install(TARGETS abyssparse)
 
 # tests
 add_custom_target(tests)
 
-add_executable(hyprlang_test "tests/parse/main.cpp")
-target_link_libraries(hyprlang_test PRIVATE hypr::hyprlang)
+add_executable(abyssparse_test "tests/parse/main.cpp")
+target_link_libraries(abyssparse_test PRIVATE abyss::abyssparse)
 add_test(
   NAME "Parsing"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
-  COMMAND hyprlang_test "parse")
-add_dependencies(tests hyprlang_test)
+  COMMAND abyssparse_test "parse")
+add_dependencies(tests abyssparse_test)
 
-add_executable(hyprlang_fuzz "tests/fuzz/main.cpp")
-target_link_libraries(hyprlang_fuzz PRIVATE hypr::hyprlang)
+add_executable(abyssparse_fuzz "tests/fuzz/main.cpp")
+target_link_libraries(abyssparse_fuzz PRIVATE abyss::abyssparse)
 add_test(
   NAME "Fuzz"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
-  COMMAND hyprlang_fuzz "fuzz")
-add_dependencies(tests hyprlang_fuzz)
+  COMMAND abyssparse_fuzz "fuzz")
+add_dependencies(tests abyssparse_fuzz)
 
 # Installation
 install(
-  TARGETS hyprlang
+  TARGETS abyssparse
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES ${CMAKE_BINARY_DIR}/hyprlang.pc
+install(FILES ${CMAKE_BINARY_DIR}/abyssparse.pc
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

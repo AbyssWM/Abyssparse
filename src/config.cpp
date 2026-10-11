@@ -12,12 +12,12 @@
 #include <expected>
 #include <sstream>
 #include <cstring>
-#include <hyprutils/string/VarList.hpp>
-#include <hyprutils/string/String.hpp>
-#include <hyprutils/string/ConstVarList.hpp>
+#include <abyssutils/string/VarList.hpp>
+#include <abyssutils/string/String.hpp>
+#include <abyssutils/string/ConstVarList.hpp>
 
-using namespace Hyprlang;
-using namespace Hyprutils::String;
+using namespace Abyssparse;
+using namespace Abyssutils::String;
 
 #ifdef __APPLE__
 #include <crt_externs.h>
@@ -28,13 +28,13 @@ extern "C" char** environ;
 #endif
 
 // defines
-inline constexpr const char* ANONYMOUS_KEY           = "__hyprlang_internal_anonymous_key";
+inline constexpr const char* ANONYMOUS_KEY           = "__abyssparse_internal_anonymous_key";
 inline constexpr const char* MULTILINE_SPACE_CHARSET = " \t";
 //
 
 static size_t seekABIStructSize(const void* begin, size_t startOffset, size_t maxSize) {
     for (size_t off = startOffset; off < maxSize; off += 4) {
-        if (*(int*)((unsigned char*)begin + off) == HYPRLANG_END_MAGIC)
+        if (*(int*)((unsigned char*)begin + off) == ABYSSPARSE_END_MAGIC)
             return off;
     }
 
@@ -64,7 +64,7 @@ static std::expected<std::string, eGetNextLineFailure> getNextLine(std::istream&
     return line;
 }
 
-CConfig::CConfig(const char* path, const Hyprlang::SConfigOptions& options_) : impl(new CConfigImpl) {
+CConfig::CConfig(const char* path, const Abyssparse::SConfigOptions& options_) : impl(new CConfigImpl) {
     SConfigOptions options;
     std::memcpy(&options, &options_, seekABIStructSize(&options_, 16, sizeof(SConfigOptions)));
 
@@ -216,7 +216,7 @@ static std::expected<int64_t, std::string> configStringToInt(const std::string& 
             if (!r.has_value() || !g.has_value() || !b.has_value())
                 return std::unexpected("failed parsing " + VALUEWITHOUTFUNC);
 
-            return (a * (Hyprlang::INT)0x1000000) + (r.value() * (Hyprlang::INT)0x10000) + (g.value() * (Hyprlang::INT)0x100) + b.value();
+            return (a * (Abyssparse::INT)0x1000000) + (r.value() * (Abyssparse::INT)0x10000) + (g.value() * (Abyssparse::INT)0x100) + b.value();
         } else if (VALUEWITHOUTFUNC.length() == 8) {
             const auto RGBA = parseHex(VALUEWITHOUTFUNC);
 
@@ -245,7 +245,7 @@ static std::expected<int64_t, std::string> configStringToInt(const std::string& 
             if (!r.has_value() || !g.has_value() || !b.has_value())
                 return std::unexpected("failed parsing " + VALUEWITHOUTFUNC);
 
-            return (Hyprlang::INT)0xFF000000 + (r.value() * (Hyprlang::INT)0x10000) + (g.value() * (Hyprlang::INT)0x100) + b.value();
+            return (Abyssparse::INT)0xFF000000 + (r.value() * (Abyssparse::INT)0x10000) + (g.value() * (Abyssparse::INT)0x100) + b.value();
         } else if (VALUEWITHOUTFUNC.length() == 6) {
             const auto RGB = parseHex(VALUEWITHOUTFUNC);
 
@@ -567,7 +567,7 @@ SVariable* CConfigImpl::getVariable(const std::string& name) {
 std::optional<std::string> CConfigImpl::parseComment(const std::string& comment) {
     const auto COMMENT = trim(comment);
 
-    if (!COMMENT.starts_with("hyprlang"))
+    if (!COMMENT.starts_with("abyssparse"))
         return std::nullopt;
 
     CConstVarList args(COMMENT, 0, 's', true);

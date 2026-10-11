@@ -2,7 +2,7 @@
 #include "config.hpp"
 #include <cstring>
 
-using namespace Hyprlang;
+using namespace Abyssparse;
 
 void CParseResult::setError(const std::string& err) {
     error          = true;

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <hyprlang.hpp>
+#include <abyssparse.hpp>
 
 #define FUZZ_ITERS 1337
 
@@ -19,8 +19,8 @@ std::string garbage() {
 
 int main(int argc, char** argv, char** envp) {
 
-    Hyprlang::CConfig config("./eeeeeeeUnused", {.allowMissingConfig = true});
-    config.addConfigValue("test", {(Hyprlang::INT)0});
+    Abyssparse::CConfig config("./eeeeeeeUnused", {.allowMissingConfig = true});
+    config.addConfigValue("test", {(Abyssparse::INT)0});
 
     config.parseDynamic("");
     config.parseDynamic("", "");

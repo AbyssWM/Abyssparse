@@ -1,0 +1,10 @@
+prefix=@PREFIX@
+includedir=@INCLUDE@
+libdir=@LIBDIR@
+
+Name: abyssparse
+URL: https://github.com/AbyssWM/abyssparse
+Description: The official implementation library for the abyss config language.
+Version: @ABYSSPARSE_VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -labyssparse

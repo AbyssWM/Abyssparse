@@ -8,8 +8,8 @@
 
 struct SHandler {
     std::string                  name = "";
-    Hyprlang::SHandlerOptions    options;
-    Hyprlang::PCONFIGHANDLERFUNC func = nullptr;
+    Abyssparse::SHandlerOptions    options;
+    Abyssparse::PCONFIGHANDLERFUNC func = nullptr;
 };
 
 struct SVariable {
@@ -45,8 +45,8 @@ struct SConfigDefaultValue {
     eDataType type = CONFIGDATATYPE_EMPTY;
 
     // this sucks but I have no better idea
-    Hyprlang::PCONFIGCUSTOMVALUEHANDLERFUNC handler = nullptr;
-    Hyprlang::PCONFIGCUSTOMVALUEDESTRUCTOR  dtor    = nullptr;
+    Abyssparse::PCONFIGCUSTOMVALUEHANDLERFUNC handler = nullptr;
+    Abyssparse::PCONFIGCUSTOMVALUEDESTRUCTOR  dtor    = nullptr;
 };
 
 struct SSpecialCategoryDescriptor {
@@ -61,7 +61,7 @@ struct SSpecialCategory {
     SSpecialCategoryDescriptor*                             descriptor = nullptr;
     std::string                                             name       = "";
     std::string                                             key        = ""; // empty means no key
-    std::unordered_map<std::string, Hyprlang::CConfigValue> values;
+    std::unordered_map<std::string, Abyssparse::CConfigValue> values;
     bool                                                    isStatic = false;
 
     void                                                    applyDefaults();
@@ -83,7 +83,7 @@ class CConfigImpl {
     // if not-empty, used instead of path
     std::string                                              rawConfigString = "";
 
-    std::unordered_map<std::string, Hyprlang::CConfigValue>  values;
+    std::unordered_map<std::string, Abyssparse::CConfigValue>  values;
     std::unordered_map<std::string, SConfigDefaultValue>     defaultValues;
     std::vector<SHandler>                                    handlers;
     std::vector<SVariable>                                   variables;
@@ -97,7 +97,7 @@ class CConfigImpl {
 
     std::string                                              parseError = "";
 
-    Hyprlang::SConfigOptions                                 configOptions;
+    Abyssparse::SConfigOptions                                 configOptions;
 
     std::optional<std::string>                               parseComment(const std::string& comment);
     std::expected<float, std::string>                        parseExpression(const std::string& s);

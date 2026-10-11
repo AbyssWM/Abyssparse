@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <algorithm>
 
-#include <hyprlang.hpp>
+#include <abyssparse.hpp>
 
 namespace Colors {
     constexpr const char* RED     = "\x1b[31m";
@@ -25,7 +25,7 @@ namespace Colors {
 // globals for testing
 bool                            barrelRoll                   = false;
 std::string                     flagsFound                   = "";
-Hyprlang::CConfig*              pConfig                      = nullptr;
+Abyssparse::CConfig*              pConfig                      = nullptr;
 std::string                     currentPath                  = "";
 std::string                     ignoreKeyword                = "";
 std::string                     useKeyword                   = "";
@@ -33,63 +33,63 @@ std::string                     sameKeywordSpecialCat        = "";
 bool                            testHandlerDontOverrideValue = false;
 static std::vector<std::string> categoryKeywordActualValues;
 
-static Hyprlang::CParseResult   handleDoABarrelRoll(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult   handleDoABarrelRoll(const char* COMMAND, const char* VALUE) {
     if (std::string(VALUE) == "woohoo, some, params")
         barrelRoll = true;
 
-    Hyprlang::CParseResult result;
+    Abyssparse::CParseResult result;
     return result;
 }
 
-static Hyprlang::CParseResult handleFlagsTest(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleFlagsTest(const char* COMMAND, const char* VALUE) {
     std::string cmd = COMMAND;
     flagsFound      = cmd.substr(5);
 
-    Hyprlang::CParseResult result;
+    Abyssparse::CParseResult result;
     return result;
 }
 
-static Hyprlang::CParseResult handleCategoryKeyword(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleCategoryKeyword(const char* COMMAND, const char* VALUE) {
     categoryKeywordActualValues.emplace_back(VALUE);
 
-    return Hyprlang::CParseResult();
+    return Abyssparse::CParseResult();
 }
 
-static Hyprlang::CParseResult handleTestIgnoreKeyword(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleTestIgnoreKeyword(const char* COMMAND, const char* VALUE) {
     ignoreKeyword = VALUE;
 
-    return Hyprlang::CParseResult();
+    return Abyssparse::CParseResult();
 }
 
-static Hyprlang::CParseResult handleTestUseKeyword(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleTestUseKeyword(const char* COMMAND, const char* VALUE) {
     useKeyword = VALUE;
 
-    return Hyprlang::CParseResult();
+    return Abyssparse::CParseResult();
 }
 
-static Hyprlang::CParseResult handleNoop(const char* COMMAND, const char* VALUE) {
-    return Hyprlang::CParseResult();
+static Abyssparse::CParseResult handleNoop(const char* COMMAND, const char* VALUE) {
+    return Abyssparse::CParseResult();
 }
 
-static Hyprlang::CParseResult handleSource(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleSource(const char* COMMAND, const char* VALUE) {
     std::string PATH = std::filesystem::canonical(currentPath + "/" + VALUE);
     return pConfig->parseFile(PATH.c_str());
 }
 
-static Hyprlang::CParseResult handleSameKeywordSpecialCat(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleSameKeywordSpecialCat(const char* COMMAND, const char* VALUE) {
     sameKeywordSpecialCat = VALUE;
 
-    return Hyprlang::CParseResult();
+    return Abyssparse::CParseResult();
 }
 
-static Hyprlang::CParseResult handleTestHandlerDontOverride(const char* COMMAND, const char* VALUE) {
+static Abyssparse::CParseResult handleTestHandlerDontOverride(const char* COMMAND, const char* VALUE) {
     testHandlerDontOverrideValue = true;
 
-    Hyprlang::CParseResult result;
+    Abyssparse::CParseResult result;
     return result;
 }
 
-static Hyprlang::CParseResult handleCustomValueSet(const char* VALUE, void** data) {
+static Abyssparse::CParseResult handleCustomValueSet(const char* VALUE, void** data) {
     if (!*data)
         *data = calloc(1, sizeof(int64_t));
     std::string V = VALUE;
@@ -98,7 +98,7 @@ static Hyprlang::CParseResult handleCustomValueSet(const char* VALUE, void** dat
     else
         *reinterpret_cast<int64_t*>(*data) = 2;
 
-    Hyprlang::CParseResult result;
+    Abyssparse::CParseResult result;
     return result;
 }
 
@@ -118,13 +118,13 @@ int main(int argc, char** argv, char** envp) {
 
         std::cout << "Starting test\n";
 
-        Hyprlang::CConfig config("./config/config.conf", {});
+        Abyssparse::CConfig config("./config/config.conf", {});
         pConfig     = &config;
         currentPath = std::filesystem::canonical("./config/");
 
         // setup config
-        config.addConfigValue("testInt", (Hyprlang::INT)0);
-        config.addConfigValue("testExpr", (Hyprlang::INT)0);
+        config.addConfigValue("testInt", (Abyssparse::INT)0);
+        config.addConfigValue("testExpr", (Abyssparse::INT)0);
         config.addConfigValue("testEscapedExpr", "");
         config.addConfigValue("testEscapedExpr2", "");
         config.addConfigValue("testEscapedExpr3", "");
@@ -134,29 +134,29 @@ int main(int argc, char** argv, char** envp) {
         config.addConfigValue("testImbeddedEscapedExpression", "");
         config.addConfigValue("testDynamicEscapedExpression", "");
         config.addConfigValue("testFloat", 0.F);
-        config.addConfigValue("testVec", Hyprlang::SVector2D{.x = 69, .y = 420});
+        config.addConfigValue("testVec", Abyssparse::SVector2D{.x = 69, .y = 420});
         config.addConfigValue("testString", "");
         config.addConfigValue("testStringColon", "");
         config.addConfigValue("testEnv", "");
         config.addConfigValue("testEnv2", "");
-        config.addConfigValue("testVar", (Hyprlang::INT)0);
-        config.addConfigValue("categoryKeyword", (Hyprlang::STRING) "");
+        config.addConfigValue("testVar", (Abyssparse::INT)0);
+        config.addConfigValue("categoryKeyword", (Abyssparse::STRING) "");
         config.addConfigValue("testStringQuotes", "");
         config.addConfigValue("testStringRecursive", "");
-        config.addConfigValue("testCategory:testValueInt", (Hyprlang::INT)0);
-        config.addConfigValue("testCategory:testValueHex", (Hyprlang::INT)0xA);
-        config.addConfigValue("testCategory:nested1:testValueNest", (Hyprlang::INT)0);
-        config.addConfigValue("testCategory:nested1:nested2:testValueNest", (Hyprlang::INT)0);
-        config.addConfigValue("testCategory:nested1:categoryKeyword", (Hyprlang::STRING) "");
-        config.addConfigValue("testDefault", (Hyprlang::INT)123);
-        config.addConfigValue("testCategory:testColor1", (Hyprlang::INT)0);
-        config.addConfigValue("testCategory:testColor2", (Hyprlang::INT)0);
-        config.addConfigValue("testCategory:testColor3", (Hyprlang::INT)0);
-        config.addConfigValue("flagsStuff:value", (Hyprlang::INT)0);
-        config.addConfigValue("myColors:pink", (Hyprlang::INT)0);
-        config.addConfigValue("myColors:green", (Hyprlang::INT)0);
-        config.addConfigValue("myColors:random", (Hyprlang::INT)0);
-        config.addConfigValue("customType", {Hyprlang::CConfigCustomValueType{&handleCustomValueSet, &handleCustomValueDestroy, "def"}});
+        config.addConfigValue("testCategory:testValueInt", (Abyssparse::INT)0);
+        config.addConfigValue("testCategory:testValueHex", (Abyssparse::INT)0xA);
+        config.addConfigValue("testCategory:nested1:testValueNest", (Abyssparse::INT)0);
+        config.addConfigValue("testCategory:nested1:nested2:testValueNest", (Abyssparse::INT)0);
+        config.addConfigValue("testCategory:nested1:categoryKeyword", (Abyssparse::STRING) "");
+        config.addConfigValue("testDefault", (Abyssparse::INT)123);
+        config.addConfigValue("testCategory:testColor1", (Abyssparse::INT)0);
+        config.addConfigValue("testCategory:testColor2", (Abyssparse::INT)0);
+        config.addConfigValue("testCategory:testColor3", (Abyssparse::INT)0);
+        config.addConfigValue("flagsStuff:value", (Abyssparse::INT)0);
+        config.addConfigValue("myColors:pink", (Abyssparse::INT)0);
+        config.addConfigValue("myColors:green", (Abyssparse::INT)0);
+        config.addConfigValue("myColors:random", (Abyssparse::INT)0);
+        config.addConfigValue("customType", {Abyssparse::CConfigCustomValueType{&handleCustomValueSet, &handleCustomValueDestroy, "def"}});
 
         config.registerHandler(&handleDoABarrelRoll, "doABarrelRoll", {.allowFlags = false});
         config.registerHandler(&handleFlagsTest, "flags", {.allowFlags = true});
@@ -168,17 +168,17 @@ int main(int argc, char** argv, char** envp) {
         config.registerHandler(&handleTestHandlerDontOverride, "testHandlerDontOverride", {.allowFlags = false});
 
         config.addSpecialCategory("special", {.key = "key"});
-        config.addSpecialConfigValue("special", "value", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("special", "value", (Abyssparse::INT)0);
 
         config.addSpecialCategory("specialAnonymous", {.key = nullptr, .ignoreMissing = false, .anonymousKeyBased = true});
-        config.addSpecialConfigValue("specialAnonymous", "value", (Hyprlang::INT)0);
-        config.addSpecialConfigValue("specialAnonymous", "testHandlerDontOverride", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("specialAnonymous", "value", (Abyssparse::INT)0);
+        config.addSpecialConfigValue("specialAnonymous", "testHandlerDontOverride", (Abyssparse::INT)0);
 
         config.addSpecialCategory("specialAnonymousNested", {.key = nullptr, .ignoreMissing = false, .anonymousKeyBased = true});
-        config.addSpecialConfigValue("specialAnonymousNested", "nested:value1", (Hyprlang::INT)0);
-        config.addSpecialConfigValue("specialAnonymousNested", "nested:value2", (Hyprlang::INT)0);
-        config.addSpecialConfigValue("specialAnonymousNested", "nested1:nested2:value1", (Hyprlang::INT)0);
-        config.addSpecialConfigValue("specialAnonymousNested", "nested1:nested2:value2", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("specialAnonymousNested", "nested:value1", (Abyssparse::INT)0);
+        config.addSpecialConfigValue("specialAnonymousNested", "nested:value2", (Abyssparse::INT)0);
+        config.addSpecialConfigValue("specialAnonymousNested", "nested1:nested2:value1", (Abyssparse::INT)0);
+        config.addSpecialConfigValue("specialAnonymousNested", "nested1:nested2:value2", (Abyssparse::INT)0);
 
         config.addConfigValue("multiline", "");
 
@@ -188,17 +188,17 @@ int main(int argc, char** argv, char** envp) {
         config.commence();
 
         config.addSpecialCategory("sameKeywordSpecialCat:one", {.key = nullptr, .ignoreMissing = true});
-        config.addSpecialConfigValue("sameKeywordSpecialCat:one", "some_size", (Hyprlang::INT)10);
-        config.addSpecialConfigValue("sameKeywordSpecialCat:one", "some_radius", (Hyprlang::FLOAT)0.0);
+        config.addSpecialConfigValue("sameKeywordSpecialCat:one", "some_size", (Abyssparse::INT)10);
+        config.addSpecialConfigValue("sameKeywordSpecialCat:one", "some_radius", (Abyssparse::FLOAT)0.0);
         config.addSpecialCategory("sameKeywordSpecialCat:two", {.key = nullptr, .ignoreMissing = true});
         config.addSpecialConfigValue("sameKeywordSpecialCat:two", "hola", "");
 
         config.addSpecialCategory("specialGeneric:one", {.key = nullptr, .ignoreMissing = true});
-        config.addSpecialConfigValue("specialGeneric:one", "value", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("specialGeneric:one", "value", (Abyssparse::INT)0);
         config.addSpecialCategory("specialGeneric:two", {.key = nullptr, .ignoreMissing = true});
-        config.addSpecialConfigValue("specialGeneric:two", "value", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("specialGeneric:two", "value", (Abyssparse::INT)0);
 
-        const Hyprlang::CConfigValue copyTest = {(Hyprlang::INT)1};
+        const Abyssparse::CConfigValue copyTest = {(Abyssparse::INT)1};
         config.addSpecialConfigValue("specialGeneric:one", "copyTest", copyTest);
 
         const auto PARSERESULT = config.parse();
@@ -213,18 +213,18 @@ int main(int argc, char** argv, char** envp) {
         std::cout << " → Testing values\n";
         EXPECT(std::any_cast<int64_t>(config.getConfigValue("testInt")), 123);
         EXPECT(std::any_cast<float>(config.getConfigValue("testFloat")), 123.456f);
-        auto EXP = Hyprlang::SVector2D{.x = 69, .y = 420};
-        EXPECT(std::any_cast<Hyprlang::SVector2D>(config.getConfigValue("testVec")), EXP);
+        auto EXP = Abyssparse::SVector2D{.x = 69, .y = 420};
+        EXPECT(std::any_cast<Abyssparse::SVector2D>(config.getConfigValue("testVec")), EXP);
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testString")), std::string{"Hello World! # This is not a comment!"});
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testStringQuotes")), std::string{"\"Hello World!\""});
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueInt")), (Hyprlang::INT)123456);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueHex")), (Hyprlang::INT)0xFFFFAABB);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:nested1:testValueNest")), (Hyprlang::INT)1);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:nested1:nested2:testValueNest")), (Hyprlang::INT)1);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testDefault")), (Hyprlang::INT)123);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor1")), (Hyprlang::INT)0xFFFFFFFF);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor2")), (Hyprlang::INT)0xFF000000);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor3")), (Hyprlang::INT)0x22ffeeff);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueInt")), (Abyssparse::INT)123456);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueHex")), (Abyssparse::INT)0xFFFFAABB);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:nested1:testValueNest")), (Abyssparse::INT)1);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:nested1:nested2:testValueNest")), (Abyssparse::INT)1);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testDefault")), (Abyssparse::INT)123);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor1")), (Abyssparse::INT)0xFFFFFFFF);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor2")), (Abyssparse::INT)0xFF000000);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testColor3")), (Abyssparse::INT)0x22ffeeff);
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testStringColon")), std::string{"ee:ee:ee"});
         EXPECT(std::any_cast<const char*>(config.getConfigValue("categoryKeyword")), std::string{"oops, this one shouldn't call the handler, not fun"});
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testCategory:nested1:categoryKeyword")), std::string{"this one should not either"});
@@ -233,15 +233,15 @@ int main(int argc, char** argv, char** envp) {
 
         // test special category with same name as a keyword
         EXPECT(sameKeywordSpecialCat, std::string_view{"pablo"});
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("sameKeywordSpecialCat:one", "some_size")), (Hyprlang::INT)44);
-        EXPECT(std::any_cast<float>(config.getSpecialConfigValue("sameKeywordSpecialCat:one", "some_radius")), (Hyprlang::FLOAT)7.6);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("sameKeywordSpecialCat:one", "some_size")), (Abyssparse::INT)44);
+        EXPECT(std::any_cast<float>(config.getSpecialConfigValue("sameKeywordSpecialCat:one", "some_radius")), (Abyssparse::FLOAT)7.6);
         EXPECT(std::any_cast<const char*>(config.getSpecialConfigValue("sameKeywordSpecialCat:two", "hola")), std::string_view{"rose"});
 
         // Test templated wrapper
-        auto T1 = Hyprlang::CSimpleConfigValue<Hyprlang::INT>(&config, "testInt");
-        auto T2 = Hyprlang::CSimpleConfigValue<Hyprlang::FLOAT>(&config, "testFloat");
-        auto T3 = Hyprlang::CSimpleConfigValue<Hyprlang::SVector2D>(&config, "testVec");
-        auto T4 = Hyprlang::CSimpleConfigValue<std::string>(&config, "testString");
+        auto T1 = Abyssparse::CSimpleConfigValue<Abyssparse::INT>(&config, "testInt");
+        auto T2 = Abyssparse::CSimpleConfigValue<Abyssparse::FLOAT>(&config, "testFloat");
+        auto T3 = Abyssparse::CSimpleConfigValue<Abyssparse::SVector2D>(&config, "testVec");
+        auto T4 = Abyssparse::CSimpleConfigValue<std::string>(&config, "testString");
         EXPECT(*T1, 123);
         EXPECT(*T2, 123.456F);
         EXPECT(*T3, EXP);
@@ -286,16 +286,16 @@ int main(int argc, char** argv, char** envp) {
         EXPECT(config.parseDynamic("doABarrelRoll = woohoo, some, params").error, false);
         EXPECT(barrelRoll, true);
         EXPECT(config.parseDynamic("testCategory:testValueHex", "0xaabbccdd").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueHex")), (Hyprlang::INT)0xAABBCCDD);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("testCategory:testValueHex")), (Abyssparse::INT)0xAABBCCDD);
         EXPECT(config.parseDynamic("testStringColon", "1:3:3:7").error, false);
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testStringColon")), std::string{"1:3:3:7"});
         EXPECT(config.parseDynamic("flagsStuff:value = 69").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("flagsStuff:value")), (Hyprlang::INT)69);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("flagsStuff:value")), (Abyssparse::INT)69);
 
         // test dynamic special
-        config.addSpecialConfigValue("specialGeneric:one", "boom", (Hyprlang::INT)0);
+        config.addSpecialConfigValue("specialGeneric:one", "boom", (Abyssparse::INT)0);
         EXPECT(config.parseDynamic("specialGeneric:one:boom = 1").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialGeneric:one", "boom")), (Hyprlang::INT)1);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialGeneric:one", "boom")), (Abyssparse::INT)1);
 
         // test variables
         std::cout << " → Testing variables\n";
@@ -333,10 +333,10 @@ int main(int argc, char** argv, char** envp) {
         EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("special", "value", "b")), 3);
         EXPECT(config.parseDynamic("specialAnonymousNested[c]:nested:value1 = 4").error, false);
         EXPECT(config.parseDynamic("specialAnonymousNested[c]:nested:value2 = 5").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value1", "c")), (Hyprlang::INT)4);
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value2", "c")), (Hyprlang::INT)5);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value1", "c")), (Abyssparse::INT)4);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value2", "c")), (Abyssparse::INT)5);
         EXPECT(config.parseDynamic("specialAnonymousNested[c]:nested:value2 = 6").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value2", "c")), (Hyprlang::INT)6);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialAnonymousNested", "nested:value2", "c")), (Abyssparse::INT)6);
 
         EXPECT(config.parseDynamic("special[a]:value = 69").error, false);
         EXPECT(config.parseDynamic("special[b]:value = 420").error, false);
@@ -345,7 +345,7 @@ int main(int argc, char** argv, char** envp) {
 
         // test dynamic special variable
         EXPECT(config.parseDynamic("$SPECIALVAL1 = 2").error, false);
-        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("special", "value", "a")), (Hyprlang::INT)2);
+        EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("special", "value", "a")), (Abyssparse::INT)2);
 
         // test copying
         EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("specialGeneric:one", "copyTest")), 2);
@@ -363,7 +363,7 @@ int main(int argc, char** argv, char** envp) {
             ret = 1;
         } else {
             std::cout << Colors::GREEN << "Passed " << Colors::RESET << "empty key found in listKeysForSpecialCategory\n";
-            EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("special", "value", "")), (Hyprlang::INT)100);
+            EXPECT(std::any_cast<int64_t>(config.getSpecialConfigValue("special", "value", "")), (Abyssparse::INT)100);
         }
 
         // test anonymous
@@ -387,13 +387,13 @@ int main(int argc, char** argv, char** envp) {
 
         // test sourcing
         std::cout << " → Testing sourcing\n";
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:pink")), (Hyprlang::INT)0xFFc800c8);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:green")), (Hyprlang::INT)0xFF14f014);
-        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:random")), (Hyprlang::INT)0xFFFF1337);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:pink")), (Abyssparse::INT)0xFFc800c8);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:green")), (Abyssparse::INT)0xFF14f014);
+        EXPECT(std::any_cast<int64_t>(config.getConfigValue("myColors:random")), (Abyssparse::INT)0xFFFF1337);
 
         // test custom type
         std::cout << " → Testing custom types\n";
-        EXPECT(*reinterpret_cast<int64_t*>(std::any_cast<void*>(config.getConfigValue("customType"))), (Hyprlang::INT)1);
+        EXPECT(*reinterpret_cast<int64_t*>(std::any_cast<void*>(config.getConfigValue("customType"))), (Abyssparse::INT)1);
 
         // test multiline config
         EXPECT(std::any_cast<const char*>(config.getConfigValue("multiline")), std::string{"very        long            command"});
@@ -405,7 +405,7 @@ int main(int argc, char** argv, char** envp) {
         EXPECT(std::any_cast<const char*>(config.getConfigValue("testEnv2")), std::string{"2"});
 
         std::cout << " → Testing error.conf\n";
-        Hyprlang::CConfig errorConfig("./config/error.conf", {.verifyOnly = true, .throwAllErrors = true});
+        Abyssparse::CConfig errorConfig("./config/error.conf", {.verifyOnly = true, .throwAllErrors = true});
 
         errorConfig.commence();
         const auto ERRORS = errorConfig.parse();
@@ -415,16 +415,16 @@ int main(int argc, char** argv, char** envp) {
         EXPECT(std::count(ERRORSTR.begin(), ERRORSTR.end(), '\n'), 1);
 
         std::cout << " → Testing invalid-numbers.conf\n";
-        Hyprlang::CConfig invalidNumbersConfig("./config/invalid-numbers.conf", {.throwAllErrors = true});
-        invalidNumbersConfig.addConfigValue("invalidHex", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("emptyHex", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("hugeHex", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("invalidInt", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("emptyInt", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("invalidColor", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("invalidFirstCharColor", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("invalidColorAlpha", (Hyprlang::INT)0);
-        invalidNumbersConfig.addConfigValue("invalidFirstCharColorAlpha", (Hyprlang::INT)0);
+        Abyssparse::CConfig invalidNumbersConfig("./config/invalid-numbers.conf", {.throwAllErrors = true});
+        invalidNumbersConfig.addConfigValue("invalidHex", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("emptyHex", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("hugeHex", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("invalidInt", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("emptyInt", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("invalidColor", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("invalidFirstCharColor", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("invalidColorAlpha", (Abyssparse::INT)0);
+        invalidNumbersConfig.addConfigValue("invalidFirstCharColorAlpha", (Abyssparse::INT)0);
 
         invalidNumbersConfig.commence();
         const auto ERRORS2 = invalidNumbersConfig.parse();
@@ -433,7 +433,7 @@ int main(int argc, char** argv, char** envp) {
         const auto ERRORSTR2 = std::string{ERRORS2.getError()};
         EXPECT(std::count(ERRORSTR2.begin(), ERRORSTR2.end(), '\n'), 9 - 1);
 
-        Hyprlang::CConfig multilineErrorConfig("./config/multiline-errors.conf", {.verifyOnly = true, .throwAllErrors = true});
+        Abyssparse::CConfig multilineErrorConfig("./config/multiline-errors.conf", {.verifyOnly = true, .throwAllErrors = true});
         multilineErrorConfig.commence();
         const auto ERRORS3 = multilineErrorConfig.parse();
         EXPECT(ERRORS3.error, true);
