@@ -84,7 +84,7 @@ jobs:
           export PATH="$PREFIX/bin:$PATH"
           export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig"
           export CMAKE_PREFIX_PATH="$PREFIX"
-          cd build && ctest --output-on-failure || true
+          cd build && ctest --output-on-failure
 
       - name: Install
         run: |
