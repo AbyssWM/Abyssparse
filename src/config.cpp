@@ -80,8 +80,6 @@ CConfig::CConfig(const char* path, const Abyssparse::SConfigOptions& options_) :
 
     impl->recheckEnv();
 
-    std::ranges::sort(impl->envVariables, [&](const auto& a, const auto& b) { return a.name.length() > b.name.length(); });
-
     impl->configOptions = options;
 }
 
@@ -527,11 +525,20 @@ CParseResult CConfig::parseVariable(const std::string& lhs, const std::string& r
     }
 
     if (dynamic) {
+        // $a = $b and $b = $a re-parse each other forever
+        static int depth = 0;
+        if (depth >= 100) {
+            CParseResult result;
+            result.setError("Variable references form a cycle");
+            return result;
+        }
+        ++depth;
         for (auto& l : IT->linesContainingVar) {
             impl->categories             = l.categories;
             impl->currentSpecialCategory = l.specialCategory;
             parseLine(l.line, true);
         }
+        --depth;
 
         impl->categories = {};
     }
@@ -548,6 +555,9 @@ void CConfigImpl::recheckEnv() {
         const auto        VALUE    = ENVVAR.substr(ENVVAR.find_first_of('=') + 1);
         envVariables.push_back({VARIABLE, VALUE});
     }
+
+    // longest first, so $XAB is not replaced as $XA followed by "B"
+    std::ranges::sort(envVariables, [&](const auto& a, const auto& b) { return a.name.length() > b.name.length(); });
 }
 
 SVariable* CConfigImpl::getVariable(const std::string& name) {
@@ -609,6 +619,10 @@ std::optional<std::string> CConfigImpl::parseComment(const std::string& comment)
             newIfData.failed = negated ? VAR->truthy() : !VAR->truthy();
         else
             newIfData.failed = !negated;
+
+        // a block inside a failed block is skipped as well
+        if (!currentFlags.ifDatas.empty() && currentFlags.ifDatas.back().failed)
+            newIfData.failed = true;
 
         currentFlags.ifDatas.emplace_back(newIfData);
     }
@@ -795,6 +809,12 @@ CParseResult CConfig::parseLine(std::string line, bool dynamic) {
 
             if (!anyMatch)
                 break;
+
+            // $a = $a$a doubles on every pass, the iteration limit alone allows 2^100
+            if (LHS.size() + RHS.size() > 1024 * 1024) {
+                result.setError("Expanding variables exceeded max size");
+                return result;
+            }
 
             if (i == 99) {
                 result.setError("Expanding variables exceeded max iteration limit");
@@ -1069,7 +1089,11 @@ CParseResult CConfig::parseDynamic(const char* command, const char* value) {
 
 void CConfig::clearState() {
     impl->categories.clear();
-    impl->parseError = "";
+    // an unclosed special category or if/noerror block of the last parse must not leak into this one
+    impl->currentSpecialCategory = nullptr;
+    impl->currentSpecialKey      = "";
+    impl->currentFlags           = {};
+    impl->parseError             = "";
     impl->recheckEnv();
     impl->variables = impl->envVariables;
     std::erase_if(impl->specialCategories, [](const auto& e) { return !e->isStatic; });
